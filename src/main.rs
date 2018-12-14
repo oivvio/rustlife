@@ -12,15 +12,21 @@ const NCOLS: i16 = 100;
 const NROWS: i16 = 40;
 const NCELLS: i16 = NCOLS * NROWS + 1000;
 
-type Field = ([u8; NCELLS as usize], i16, i16);
+// type Field = ([u8; NCELLS as usize], i16, i16);
 
-fn print_field(field: Field) {
+struct Field {
+    data: [u8; NCELLS as usize],
+    rows: i16,
+    cols: i16,
+}
+
+fn print_field(field: &Field) {
     printw("\n");
 
-    for row in 0..field.1 {
-        for col in 0..field.2 {
-            let index = (col + (row * field.2)) as usize;
-            let val = field.0[index];
+    for row in 0..field.rows {
+        for col in 0..field.cols {
+            let index = (col + (row * field.cols)) as usize;
+            let val = field.data[index];
             match val {
                 0 => printw(" "),
                 _ => printw("X"),
@@ -32,17 +38,25 @@ fn print_field(field: Field) {
 }
 
 fn get_new_field() -> Field {
-    let field = ([0; NCELLS as usize], NROWS, NCOLS);
+    let field = Field {
+        data: [0; NCELLS as usize],
+        rows: NROWS,
+        cols: NCOLS,
+    };
     return field;
 }
 
 fn get_new_random_field() -> Field {
-    let mut field = ([0; NCELLS as usize], NROWS, NCOLS);
+    let mut field = Field {
+        data: [0; NCELLS as usize],
+        rows: NROWS,
+        cols: NCOLS,
+    };
 
     for row in 0..NROWS {
         for col in 0..NCOLS {
             let index = get_index(row, col);
-            field.0[index] = rand::thread_rng().gen_range(0, 2);
+            field.data[index] = rand::thread_rng().gen_range(0, 2);
         }
     }
 
@@ -71,19 +85,19 @@ fn get_index(row: i16, col: i16) -> usize {
     (col + (row * NCOLS)) as usize
 }
 
-fn count_neighbours(field: Field, row: i16, col: i16) -> u8 {
+fn count_neighbours(field: &Field, row: i16, col: i16) -> u8 {
     let mut count: u8 = 0;
 
-    count += field.0[get_index(row - 1, col - 1)];
-    count += field.0[get_index(row - 1, col)];
-    count += field.0[get_index(row - 1, col + 1)];
+    count += field.data[get_index(row - 1, col - 1)];
+    count += field.data[get_index(row - 1, col)];
+    count += field.data[get_index(row - 1, col + 1)];
 
-    count += field.0[get_index(row, col - 1)];
-    count += field.0[get_index(row, col + 1)];
+    count += field.data[get_index(row, col - 1)];
+    count += field.data[get_index(row, col + 1)];
 
-    count += field.0[get_index(row + 1, col - 1)];
-    count += field.0[get_index(row + 1, col)];
-    count += field.0[get_index(row + 1, col + 1)];
+    count += field.data[get_index(row + 1, col - 1)];
+    count += field.data[get_index(row + 1, col)];
+    count += field.data[get_index(row + 1, col + 1)];
 
     count
 }
@@ -93,14 +107,14 @@ fn count_live_cells(field: Field) -> u16 {
     for row in 0..NROWS {
         for col in 0..NCOLS {
             // Count neighbours at this postion
-            count += (field.0[get_index(row, col)] as u16);
+            count += (field.data[get_index(row, col)] as u16);
         }
     }
 
     count
 }
 
-fn update_field(field: Field) -> Field {
+fn update_field(field: &Field) -> Field {
     // Init new empty field
     let mut new_field = get_new_field();
 
@@ -108,10 +122,10 @@ fn update_field(field: Field) -> Field {
     for row in 0..NROWS {
         for col in 0..NCOLS {
             // Count neighbours at this postion
-            let count = count_neighbours(field, row, col);
-            new_field.0[get_index(row, col)] = match (field.0[get_index(row, col)], count) {
-                (1, 2) | (1, 3) => 1,
-                (0, 3) => 1,
+            let count = count_neighbours(&field, row, col);
+            let current_cell = field.data[get_index(row, col)];
+            new_field.data[get_index(row, col)] = match (current_cell, count) {
+                (1, 2) | (1, 3) | (0, 3) => 1,
                 _ => 0,
             };
         }
@@ -127,13 +141,12 @@ fn main() {
     let stop = 1000;
 
     for index in 1..stop {
-        field = update_field(field);
-        print_field(field);
+        field = update_field(&field);
+        print_field(&field);
 
         if index < stop - 1 {
             clear();
         }
-
     }
     printw("Press key\n");
     getch();
