@@ -1,0 +1,9 @@
+[package]
+name = "life"
+version = "0.1.0"
+authors = ["Oivvio Polite <oivvio@polite.se>"]
+edition = "2018"
+
+[dependencies]
+ncurses = "5.97.0"
+rand = "0.4.0"
