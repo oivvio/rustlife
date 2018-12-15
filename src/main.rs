@@ -6,8 +6,8 @@ use rand::Rng;
 
 struct Field {
     data: Vec<u8>,
-    nrows: i16,
-    ncols: i16,
+    nrows: i32,
+    ncols: i32,
 }
 
 fn print_field_diff(old_field: &Field, new_field: &Field) {
@@ -19,7 +19,7 @@ fn print_field_diff(old_field: &Field, new_field: &Field) {
             if old_field.data[index] != new_field.data[index] {
                 match new_field.data[index] {
                     0 => mvprintw(row as i32, col as i32, " "),
-                    _ => mvprintw(row as i32, col as i32, "X"),
+                    _ => mvprintw(row as i32, col as i32, "O"),
                 };
             }
         }
@@ -28,7 +28,7 @@ fn print_field_diff(old_field: &Field, new_field: &Field) {
     refresh();
 }
 
-fn get_new_field(nrows: i16, ncols: i16) -> Field {
+fn get_new_field(nrows: i32, ncols: i32) -> Field {
     let field = Field {
         data: vec![0; (nrows * ncols) as usize],
         nrows: nrows,
@@ -37,7 +37,7 @@ fn get_new_field(nrows: i16, ncols: i16) -> Field {
     return field;
 }
 
-fn get_new_random_field(nrows: i16, ncols: i16) -> Field {
+fn get_new_random_field(nrows: i32, ncols: i32) -> Field {
     let mut field = Field {
         data: vec![0; (nrows * ncols) as usize],
         nrows: nrows,
@@ -54,7 +54,7 @@ fn get_new_random_field(nrows: i16, ncols: i16) -> Field {
     field
 }
 
-fn get_index(field: &Field, row: i16, col: i16) -> usize {
+fn get_index(field: &Field, row: i32, col: i32) -> usize {
     let mut row = row;
     let mut col = col;
 
@@ -77,7 +77,7 @@ fn get_index(field: &Field, row: i16, col: i16) -> usize {
     (col + (row * field.ncols)) as usize
 }
 
-fn count_neighbours(field: &Field, row: i16, col: i16) -> u8 {
+fn count_neighbours(field: &Field, row: i32, col: i32) -> u8 {
     let mut count: u8 = 0;
 
     count += field.data[get_index(&field, row - 1, col - 1)];
@@ -116,21 +116,22 @@ fn update_field(field: &Field) -> Field {
 fn main() {
     let window = initscr();
 
-    let ncols = (getmaxx(window) - 1) as i16;
-    let nrows = (getmaxy(window) - 1) as i16;
+    let ncols = (getmaxx(window) - 1) as i32;
+    let nrows = (getmaxy(window) - 1) as i32;
 
     let mut field = get_new_random_field(nrows, ncols);
     let mut new_field;
 
-    let stop = 1000;
-
+    let stop = 2000;
+    // Don't wait for input
+    // nodelay(window, true);
+    
+    // print diff between first first field and empty
+    print_field_diff(&get_new_field(nrows, ncols), &field);
     for index in 1..stop {
         new_field = update_field(&field);
-        print_field_diff(&new_field, &field);
+        print_field_diff(&field, &new_field);
         field = new_field;
-        if index < stop - 1 {
-            clear();
-        }
     }
 
     printw("Press key\n");
