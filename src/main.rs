@@ -4,12 +4,8 @@ use ncurses::*;
 
 use rand::Rng;
 
-const NCOLS: i16 = 200;
-const NROWS: i16 = 40;
-const NCELLS: i16 = NCOLS * NROWS;
-
 struct Field {
-    data: [u8; NCELLS as usize],
+    data: Vec<u8>,
     nrows: i16,
     ncols: i16,
 }
@@ -32,20 +28,20 @@ fn print_field_diff(old_field: &Field, new_field: &Field) {
     refresh();
 }
 
-fn get_new_field() -> Field {
+fn get_new_field(nrows: i16, ncols: i16) -> Field {
     let field = Field {
-        data: [0; NCELLS as usize],
-        nrows: NROWS,
-        ncols: NCOLS,
+        data: vec![0; (nrows * ncols) as usize],
+        nrows: nrows,
+        ncols: ncols,
     };
     return field;
 }
 
-fn get_new_random_field() -> Field {
+fn get_new_random_field(nrows: i16, ncols: i16) -> Field {
     let mut field = Field {
-        data: [0; NCELLS as usize],
-        nrows: NROWS,
-        ncols: NCOLS,
+        data: vec![0; (nrows * ncols) as usize],
+        nrows: nrows,
+        ncols: ncols,
     };
 
     for row in 0..field.nrows {
@@ -100,7 +96,7 @@ fn count_neighbours(field: &Field, row: i16, col: i16) -> u8 {
 
 fn update_field(field: &Field) -> Field {
     // Init new empty field
-    let mut new_field = get_new_field();
+    let mut new_field = get_new_field(field.nrows, field.ncols);
 
     // Look att all positions in old field
     for row in 0..field.nrows {
@@ -118,10 +114,12 @@ fn update_field(field: &Field) -> Field {
 }
 
 fn main() {
-    // let ten_millis = time::Duration::from_millis(50);
+    let window = initscr();
 
-    initscr();
-    let mut field = get_new_random_field();
+    let ncols = (getmaxx(window) - 1) as i16;
+    let nrows = (getmaxy(window) - 1) as i16;
+
+    let mut field = get_new_random_field(nrows, ncols);
     let mut new_field;
 
     let stop = 1000;
