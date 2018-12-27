@@ -2,5 +2,5 @@ extern crate lifelib;
 
 fn main() {
     // life::bench();
-    lifelib::run();
+    lifelib::ndrun();
 }
