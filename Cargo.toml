@@ -5,5 +5,11 @@ authors = ["Oivvio Polite <oivvio@polite.se>"]
 edition = "2018"
 
 [dependencies]
-ncurses = "5.97.0"
-rand = "0.4.0"
+lifelib = { path = "lifelib" }
+
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "my_benchmark"
+harness = false
